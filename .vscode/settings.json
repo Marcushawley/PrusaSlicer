@@ -1,0 +1,10 @@
+{
+    "cmake.configureOnOpen": false,
+    "cmake.buildDirectory": "${workspaceFolder}/Build",
+    "cmake.configureSettings" : {
+        "CMAKE_BUILD_TYPE" : "Debug",
+        "SLIC3R_STATIC" : 1,
+        "SLIC3R_ASAN" : 1,
+        "CMAKE_PREFIX_PATH" : "${workspaceFolder}/deps/Build/destdir/usr/local"
+    }
+}
