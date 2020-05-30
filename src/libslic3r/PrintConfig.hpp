@@ -38,6 +38,11 @@ enum InfillPattern {
     ipGyroid, ipHilbertCurve, ipArchimedeanChords, ipOctagramSpiral, ipCount,
 };
 
+enum BJInfillPattern
+{
+    ipSolid, ipCheckerBoard
+};
+
 enum class IroningType {
 	TopSurfaces,
 	TopmostOnly,
@@ -77,6 +82,7 @@ template<> inline const t_config_enum_values& ConfigOptionEnum<PrinterTechnology
     if (keys_map.empty()) {
         keys_map["FFF"]             = ptFFF;
         keys_map["SLA"]             = ptSLA;
+        keys_map["PBBJ"]            = ptPBBJ;
     }
     return keys_map;
 }
@@ -180,6 +186,15 @@ template<> inline const t_config_enum_values& ConfigOptionEnum<SLAPillarConnecti
     return keys_map;
 }
 
+template<> inline const t_config_enum_values& ConfigOptionEnum<BJInfillPattern>::get_enum_values() {
+    static t_config_enum_values keys_map;
+    if (keys_map.empty()) {
+        keys_map["solid"]              = ipSolid;
+        keys_map["checkerboard"]       = ipCheckerBoard;
+    }
+    return keys_map;
+}
+
 // Defines each and every confiuration option of Slic3r, including the properties of the GUI dialogs.
 // Does not store the actual values, but defines default values.
 class PrintConfigDef : public ConfigDef
@@ -201,6 +216,7 @@ private:
     void init_fff_params();
     void init_extruder_option_keys();
     void init_sla_params();
+    void init_pbbj_params();
 
     std::vector<std::string> 	m_extruder_option_keys;
     std::vector<std::string> 	m_extruder_retract_keys;
@@ -1267,6 +1283,97 @@ protected:
         this->SLAPrintConfig      ::initialize(cache, base_ptr);
         this->SLAPrintObjectConfig::initialize(cache, base_ptr);
         this->SLAMaterialConfig   ::initialize(cache, base_ptr);
+    }
+};
+
+// This object is mapped to Perl as Slic3r::Config::PrintRegion.
+class PBBJPrintConfig : public StaticPrintConfig
+{
+    STATIC_PRINT_CONFIG_CACHE(PBBJPrintConfig)
+public:
+    ConfigOptionString     output_filename_format;
+
+protected:
+    void initialize(StaticCacheBase &cache, const char *base_ptr)
+    {
+        OPT_PTR(output_filename_format);
+    }
+};
+
+
+class PBBJPrintObjectConfig : public StaticPrintConfig
+{
+    STATIC_PRINT_CONFIG_CACHE(PBBJPrintObjectConfig)
+public:
+    ConfigOptionFloat layer_height;
+    ConfigOptionEnum<BJInfillPattern> bj_fill_pattern;
+    ConfigOptionInt n_pass;
+
+protected:
+    void initialize(StaticCacheBase &cache, const char *base_ptr)
+    {
+        OPT_PTR(layer_height);
+        OPT_PTR(bj_fill_pattern);
+        OPT_PTR(n_pass);
+    }
+};
+
+class PowderMaterialConfig : public StaticPrintConfig
+{
+    STATIC_PRINT_CONFIG_CACHE(PowderMaterialConfig)
+public:
+    ConfigOptionFloat                       initial_layer_height;
+    ConfigOptionFloat                       bottle_cost;
+    ConfigOptionFloat                       bottle_volume;
+    ConfigOptionFloat                       bottle_weight;
+    ConfigOptionFloat                       material_density;
+    ConfigOptionFloat                       packing_density;
+protected:
+    void initialize(StaticCacheBase &cache, const char *base_ptr)
+    {
+        OPT_PTR(initial_layer_height);
+        OPT_PTR(bottle_cost);
+        OPT_PTR(bottle_weight);
+        OPT_PTR(material_density);
+        OPT_PTR(packing_density);
+    }
+};
+
+class PBBJPrinterConfig : public StaticPrintConfig
+{
+    STATIC_PRINT_CONFIG_CACHE(PBBJPrinterConfig)
+public:
+    ConfigOptionEnum<PrinterTechnology>     printer_technology;
+    ConfigOptionPoints                      bed_shape;
+    ConfigOptionFloat                       max_print_height;
+    ConfigOptionPoints                      dpi;
+protected:
+    void initialize(StaticCacheBase &cache, const char *base_ptr)
+    {
+        OPT_PTR(printer_technology);
+        OPT_PTR(bed_shape);
+        OPT_PTR(max_print_height);
+        OPT_PTR(dpi);
+
+    }
+};
+
+class PBBJFullPrintConfig : public PBBJPrinterConfig, public PBBJPrintConfig, public PBBJPrintObjectConfig, public PowderMaterialConfig
+{
+    STATIC_PRINT_CONFIG_CACHE_DERIVED(PBBJFullPrintConfig)
+    PBBJFullPrintConfig() : PBBJPrinterConfig(0), PBBJPrintConfig(0), PBBJPrintObjectConfig(0), PowderMaterialConfig(0) { initialize_cache(); *this = s_cache_PBBJFullPrintConfig.defaults(); }
+
+public:
+
+protected:
+    // Protected constructor to be called to initialize ConfigCache::m_default.
+    PBBJFullPrintConfig(int) : PBBJPrinterConfig(0), PBBJPrintConfig(0), PBBJPrintObjectConfig(0), PowderMaterialConfig(0) {}
+    void initialize(StaticCacheBase &cache, const char *base_ptr)
+    {
+        this->PBBJPrinterConfig    ::initialize(cache, base_ptr);
+        this->PBBJPrintConfig      ::initialize(cache, base_ptr);
+        this->PBBJPrintObjectConfig::initialize(cache, base_ptr);
+        this->PowderMaterialConfig   ::initialize(cache, base_ptr);
     }
 };
 

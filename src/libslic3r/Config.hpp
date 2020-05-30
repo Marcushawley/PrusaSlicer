@@ -109,6 +109,8 @@ enum PrinterTechnology : unsigned char
     ptFFF,
     // Stereolitography
     ptSLA,
+    // Powder bed Binder Jetting
+    ptPBBJ,
     // Unknown, useful for command line processing
     ptUnknown,
     // Any technology, useful for parameters compatible with both ptFFF and ptSLA

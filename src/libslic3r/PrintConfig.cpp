@@ -33,6 +33,8 @@ PrintConfigDef::PrintConfigDef()
     assign_printer_technology_to_unknown(this->options, ptFFF);
     this->init_sla_params();
     assign_printer_technology_to_unknown(this->options, ptSLA);
+    this->init_pbbj_params();
+    assign_printer_technology_to_unknown(this->options, ptPBBJ);
 }
 
 void PrintConfigDef::init_common_params()
@@ -50,6 +52,7 @@ void PrintConfigDef::init_common_params()
     def->enum_keys_map = &ConfigOptionEnum<PrinterTechnology>::get_enum_values();
     def->enum_values.push_back("FFF");
     def->enum_values.push_back("SLA");
+    def->enum_values.push_back("PBBJ");
     def->set_default_value(new ConfigOptionEnum<PrinterTechnology>(ptFFF));
 
     def = this->add("bed_shape", coPoints);
@@ -3023,6 +3026,70 @@ void PrintConfigDef::init_sla_params()
     def->set_default_value(new ConfigOptionFloat(2.0));
 }
 
+void PrintConfigDef::init_pbbj_params()
+{
+   ConfigOptionDef* def;
+
+    def = this->add("layer_height", coFloat);
+    def->label = L("Layer Height");
+    def->category = L("Printer");
+    def->tooltip = L("test");
+
+    def = this->add("bj_fill_pattern", coEnum);
+    def->label = L("Fill Pattern");
+    def->tooltip = L("Fill Pattern");
+    def->enum_keys_map = &ConfigOptionEnum<BJInfillPattern>::get_enum_values();
+    def->enum_values.push_back("Solid");
+    def->enum_values.push_back("CheckerBoard");
+    def->set_default_value(new ConfigOptionEnum<BJInfillPattern>(ipSolid));
+
+    def = this->add("n_pass", coInt);
+    def->label = L("number of pass");
+    def->category = L("Printer");
+    def->tooltip = L("test");
+
+    def = this->add("dpi", coPoints);
+    def->label = L("DPI");
+    def->category = L("Printhead");
+    def->tooltip = L("test");
+
+    def = this->add("initial_layer_height", coFloat);
+    def->label = L("Initial layer height");
+    def->tooltip = L("Initial layer height");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(0.3));
+
+    def = this->add("bottle_cost", coFloat);
+    def->label = L("Cost");
+    def->tooltip = L("Cost");
+    def->sidetext = L("money/bottle");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(0.0));
+
+    def = this->add("bottle_weight", coFloat);
+    def->label = L("Bottle weight");
+    def->tooltip = L("Bottle weight");
+    def->sidetext = L("kg");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(1.0));
+
+    def = this->add("material_density", coFloat);
+    def->label = L("Density");
+    def->tooltip = L("Density");
+    def->sidetext = L("g/ml");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(1.0));
+
+    def = this->add("packing_density", coFloat);
+    def->label = L("packing density");
+    def->tooltip = L("packing density");
+    def->sidetext = L("%");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(0.50));
+
+}
+
 void PrintConfigDef::handle_legacy(t_config_option_key &opt_key, std::string &value)
 {
     // handle legacy options
@@ -3412,6 +3479,12 @@ StaticPrintConfig::StaticCache<class Slic3r::SLAPrintConfig>        SLAPrintConf
 StaticPrintConfig::StaticCache<class Slic3r::SLAPrintObjectConfig>  SLAPrintObjectConfig::s_cache_SLAPrintObjectConfig;
 StaticPrintConfig::StaticCache<class Slic3r::SLAPrinterConfig>      SLAPrinterConfig::s_cache_SLAPrinterConfig;
 StaticPrintConfig::StaticCache<class Slic3r::SLAFullPrintConfig>    SLAFullPrintConfig::s_cache_SLAFullPrintConfig;
+
+StaticPrintConfig::StaticCache<class Slic3r::PowderMaterialConfig>     PowderMaterialConfig::s_cache_PowderMaterialConfig;
+StaticPrintConfig::StaticCache<class Slic3r::PBBJPrintConfig>        PBBJPrintConfig::s_cache_PBBJPrintConfig;
+StaticPrintConfig::StaticCache<class Slic3r::PBBJPrintObjectConfig>  PBBJPrintObjectConfig::s_cache_PBBJPrintObjectConfig;
+StaticPrintConfig::StaticCache<class Slic3r::PBBJPrinterConfig>      PBBJPrinterConfig::s_cache_PBBJPrinterConfig;
+StaticPrintConfig::StaticCache<class Slic3r::PBBJFullPrintConfig>    PBBJFullPrintConfig::s_cache_PBBJFullPrintConfig;
 
 CLIActionsConfigDef::CLIActionsConfigDef()
 {
